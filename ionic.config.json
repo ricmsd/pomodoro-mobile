@@ -1,0 +1,7 @@
+{
+  "name": "pomodoro-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

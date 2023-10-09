@@ -23,7 +23,9 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
   ionViewWillEnter(): void {
     this.reset();
 
-    this.chart = echarts.init(this.echartsElementRef?.nativeElement);
+    this.chart = echarts.init(this.echartsElementRef?.nativeElement, null, {
+      renderer: 'svg'
+    });
     this.chart.setOption({
       series: [
         {
@@ -83,11 +85,11 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
             rich: {
               value: {
                 fontSize: 32,
-                color: '#555'
+                color: 'var(--data-color)'
               },
               unit: {
                 fontSize: 14,
-                color: '#555',
+                color: 'var(--data-color)',
                 padding: [0, 0, -8, 4]
               }
             }

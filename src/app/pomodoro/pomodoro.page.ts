@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
+import { Gesture, ViewDidLeave, ViewWillEnter, createGesture } from '@ionic/angular';
 import { StatusBar } from '@capacitor/status-bar';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import * as echarts from 'echarts';
 
 @Component({
@@ -8,24 +9,45 @@ import * as echarts from 'echarts';
   templateUrl: './pomodoro.page.html',
   styleUrls: ['./pomodoro.page.scss'],
 })
-export class PomodoroPage implements OnInit, ViewWillEnter {
+export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   @ViewChild('echarts') echartsElementRef?: ElementRef<HTMLElement>;
 
   public chart?: echarts.ECharts;
   public startTime: number = Date.now();
   public color = '#ea5548'; // Tomato Red!
 
+  private longTapGesture?: Gesture;
+
   constructor() {
   }
 
   ngOnInit() {
+    console.log('ngOnInit');
     StatusBar.setOverlaysWebView({ overlay: true });
     StatusBar.hide();
   }
 
   ionViewWillEnter(): void {
     this.reset();
+    this.createChart();
+    this.enableGestures();
+  }
 
+  ionViewDidLeave(): void {
+    this.destroyGestures();
+  }
+
+  private reset(): void {
+    this.startTime = Date.now();
+    this.color = '#ea5548';
+  }
+
+  @HostListener('window:resize', ['$event'])
+  public onResizeWindow(event: Event): void {
+    this.chart?.resize();
+  }
+
+  private createChart(): void {
     this.chart = echarts.init(this.echartsElementRef?.nativeElement, null, {
       renderer: 'svg'
     });
@@ -231,17 +253,31 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
     }, 1000);
   }
 
-  private reset(): void {
-    this.startTime = Date.now();
-    this.color = '#ea5548';
+  private enableGestures(): void {
+    let longTapTimerId: any;
+    this.longTapGesture = createGesture({
+      el: <HTMLElement>this.echartsElementRef?.nativeElement,
+      gestureName: 'long-tap',
+      threshold: 0,
+      onStart: () => {
+        longTapTimerId = setTimeout(() => {
+          this.onLongTap();
+        }, 2000);
+      },
+      onEnd: () => {
+        clearTimeout(longTapTimerId);
+      }
+    });
+    this.longTapGesture.enable();
   }
 
-  public onClickChart(): void {
-    this.reset();
+  private destroyGestures(): void {
+    this.longTapGesture?.destroy();
   }
 
-  @HostListener('window:resize', ['$event'])
-  public onResizeWindow(event: Event): void {
-    this.chart?.resize();
+  private onLongTap(): void {
+    Haptics.vibrate().then(() => {
+      this.reset();
+    });
   }
 }

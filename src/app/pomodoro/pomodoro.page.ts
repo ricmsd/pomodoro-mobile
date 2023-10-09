@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Gesture, ViewDidLeave, ViewWillEnter, createGesture } from '@ionic/angular';
 import { StatusBar } from '@capacitor/status-bar';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Haptics } from '@capacitor/haptics';
 import * as echarts from 'echarts';
 
 @Component({
@@ -16,15 +16,23 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   public startTime: number = Date.now();
   public color = '#ea5548'; // Tomato Red!
 
-  private longTapGesture?: Gesture;
+  private tapGesture?: Gesture;
+
+  public isEnd: boolean = false;
+  public paused: boolean = false;
+  public pausedTime?: number;
 
   constructor() {
   }
 
-  ngOnInit() {
-    console.log('ngOnInit');
-    StatusBar.setOverlaysWebView({ overlay: true });
-    StatusBar.hide();
+  async ngOnInit() {
+    try {
+      // only for mobile. www ver. throw exception :-(
+      await StatusBar.setOverlaysWebView({ overlay: true });
+      await StatusBar.hide();
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   ionViewWillEnter(): void {
@@ -40,6 +48,9 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private reset(): void {
     this.startTime = Date.now();
     this.color = '#ea5548';
+    this.isEnd = false;
+    this.paused = false;
+    this.pausedTime = undefined;
   }
 
   @HostListener('window:resize', ['$event'])
@@ -60,6 +71,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
           min: 0,
           max: 30,
           splitNumber: 6,
+          silent: true,
           pointer: {
             show: false
           },
@@ -132,6 +144,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
           min: 0,
           max: 30 * 60,
           splitNumber: 6,
+          silent: true,
           itemStyle: {
             color: this.color
           },
@@ -175,6 +188,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
           min: 0,
           max: 30,
           splitNumber: 6,
+          silent: true,
           itemStyle: {
             color: this.color
           },
@@ -226,58 +240,98 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
       ]
     });
 
-    setInterval(() => {
-      let second = (Date.now() - this.startTime) / 1000;
-      if (second > 60 * 30) {
-        second = 60 * 30;
-      }
-      if (second > 60 * 25) {
-        this.color = '#22c55e';
-      }
-      this.chart?.setOption({
-        series: [
-          {
-            name: 'minute',
-            anchor: {
-              itemStyle: { color: this.color },
-            },
-            data: [{ value: Math.floor(second / 60) }]
-          },
-          {
-            name: 'second',
-            itemStyle: { color: this.color },
-            data: [{ value: second }]
-          }
-        ]
-      });
+    this.startIntervalUpdateProgressData();
+  }
+
+  private intervalUpdateProgressDataId?: any;
+  private startIntervalUpdateProgressData(): void {
+    this.intervalUpdateProgressDataId = setInterval(() => {
+      this.updateProgressData();
     }, 1000);
+  }
+
+  private stopIntervalUpdateProgressData(): void {
+    if (this.intervalUpdateProgressDataId) {
+      clearInterval(this.intervalUpdateProgressDataId);
+      this.intervalUpdateProgressDataId = undefined;
+    }
+  }
+
+  private updateProgressData(): void {
+    let second = (Date.now() - this.startTime) / 1000;
+    if (second >= 60 * 30) {
+      second = 60 * 30;
+      this.isEnd = true;
+      this.stopIntervalUpdateProgressData();
+    }
+    if (second > 60 * 25) {
+      this.color = '#22c55e';
+    }
+    this.chart?.setOption({
+      series: [
+        {
+          name: 'minute',
+          anchor: {
+            itemStyle: { color: this.color },
+          },
+          data: [{ value: Math.floor(second / 60) }]
+        },
+        {
+          name: 'second',
+          itemStyle: { color: this.color },
+          data: [{ value: second }]
+        }
+      ]
+    });
+    // console.log(`updateProgressData: second=${second}`)
   }
 
   private enableGestures(): void {
     let longTapTimerId: any;
-    this.longTapGesture = createGesture({
+    this.tapGesture = createGesture({
       el: <HTMLElement>this.echartsElementRef?.nativeElement,
-      gestureName: 'long-tap',
+      gestureName: 'tap',
       threshold: 0,
       onStart: () => {
         longTapTimerId = setTimeout(() => {
+          longTapTimerId = undefined;
           this.onLongTap();
         }, 2000);
       },
       onEnd: () => {
-        clearTimeout(longTapTimerId);
+        if (longTapTimerId) {
+          clearTimeout(longTapTimerId);
+          this.onTap();
+        }
       }
     });
-    this.longTapGesture.enable();
+    this.tapGesture.enable();
   }
 
   private destroyGestures(): void {
-    this.longTapGesture?.destroy();
+    this.tapGesture?.destroy();
   }
 
   private onLongTap(): void {
     Haptics.vibrate().then(() => {
       this.reset();
     });
+  }
+
+  private onTap(): void {
+    if (this.isEnd) {
+      this.reset();
+      return;
+    }
+
+    if (this.paused) {
+      this.startTime += Date.now() - <number>this.pausedTime;
+      this.pausedTime = undefined;
+      this.startIntervalUpdateProgressData();
+    } else {
+      this.pausedTime = Date.now();
+      this.stopIntervalUpdateProgressData();
+    }
+    this.paused = !this.paused;
   }
 }

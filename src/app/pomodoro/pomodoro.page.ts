@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import * as echarts from 'echarts';
 
@@ -10,6 +10,7 @@ import * as echarts from 'echarts';
 export class PomodoroPage implements OnInit, ViewWillEnter {
   @ViewChild('echarts') echartsElementRef?: ElementRef<HTMLElement>;
 
+  public chart?: echarts.ECharts;
   public startTime: number = Date.now();
   public color = '#ea5548'; // Tomato Red!
 
@@ -22,8 +23,8 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
   ionViewWillEnter(): void {
     this.reset();
 
-    const chart = echarts.init(this.echartsElementRef?.nativeElement);
-    chart.setOption({
+    this.chart = echarts.init(this.echartsElementRef?.nativeElement);
+    this.chart.setOption({
       series: [
         {
           name: 'minute',
@@ -116,7 +117,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
       if (second > 60 * 25) {
         this.color = '#22c55e';
       }
-      chart.setOption({
+      this.chart?.setOption({
         series: [
           {
             name: 'minute',
@@ -142,5 +143,10 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
 
   public onClickChart(): void {
     this.reset();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  public onResizeWindow(event: Event): void {
+    this.chart?.resize();
   }
 }

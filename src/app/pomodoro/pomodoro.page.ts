@@ -39,13 +39,17 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     this.reset();
     this.createChart();
     this.enableGestures();
+    this.startIntervalUpdateProgressData();
   }
 
   ionViewDidLeave(): void {
+    this.stopIntervalUpdateProgressData();
     this.destroyGestures();
+    this.destroyChart();
   }
 
   private reset(): void {
+    // this.startTime = Date.now() - 60 * 29 * 1000; // for debug
     this.startTime = Date.now();
     this.color = '#ea5548';
     this.isEnd = false;
@@ -239,12 +243,21 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
         }
       ]
     });
+  }
 
-    this.startIntervalUpdateProgressData();
+  private destroyChart(): void {
+    if (!this.chart) {
+      return;
+    }
+    echarts.dispose(this.chart);
   }
 
   private intervalUpdateProgressDataId?: any;
   private startIntervalUpdateProgressData(): void {
+    if (this.intervalUpdateProgressDataId) {
+      // already started.
+      return;
+    }
     this.intervalUpdateProgressDataId = setInterval(() => {
       this.updateProgressData();
     }, 1000);
@@ -315,12 +328,14 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private onLongTap(): void {
     Haptics.vibrate().then(() => {
       this.reset();
+      this.startIntervalUpdateProgressData();
     });
   }
 
   private onTap(): void {
     if (this.isEnd) {
       this.reset();
+      this.startIntervalUpdateProgressData();
       return;
     }
 

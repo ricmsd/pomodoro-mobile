@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
+import { StatusBar } from '@capacitor/status-bar';
 import * as echarts from 'echarts';
 
 @Component({
@@ -18,6 +19,8 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
   }
 
   ngOnInit() {
+    StatusBar.setOverlaysWebView({ overlay: true });
+    StatusBar.hide();
   }
 
   ionViewWillEnter(): void {

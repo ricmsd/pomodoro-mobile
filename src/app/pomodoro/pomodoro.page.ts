@@ -29,6 +29,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
         {
           name: 'minute',
           type: 'gauge',
+          zlevel: 0,
           min: 0,
           max: 30,
           splitNumber: 6,
@@ -40,19 +41,32 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
           },
           axisLine: {
             lineStyle: {
-              width: 18
+              width: 50
             },
             roundCap: true
           },
           axisLabel: {
+            show: false,
             distance: 25,
             color: '#999',
             fontSize: 16
           },
+          axisTick: {
+            show: false,
+            distance: -30,
+            length: 8,
+            lineStyle: {
+              color: '#999',
+              width: 2
+            }
+          },
+          splitLine: {
+            show: false,
+          },
           anchor: {
             show: true,
             showAbove: true,
-            size: 25,
+            size: 50,
             itemStyle: {
               color: this.color
             }
@@ -62,8 +76,21 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
           },
           detail: {
             valueAnimation: true,
-            fontSize: 32,
-            offsetCenter: [0, '70%']
+            offsetCenter: ['6%', '70%'],
+            formatter: function(value: number) {
+              return `{value|${value}}{unit|min}`;
+            },
+            rich: {
+              value: {
+                fontSize: 32,
+                color: '#555'
+              },
+              unit: {
+                fontSize: 14,
+                color: '#555',
+                padding: [0, 0, -8, 4]
+              }
+            }
           },
           data: [
             {
@@ -74,15 +101,20 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
         {
           name: 'second',
           type: 'gauge',
+          zlevel: 1,
           min: 0,
           max: 30 * 60,
           splitNumber: 6,
           itemStyle: {
             color: this.color
           },
+          pointer: {
+            show: true,
+            width: 12
+          },
           progress: {
             show: true,
-            width: 18,
+            width: 50,
             roundCap: true
           },
           axisLine: {
@@ -93,6 +125,64 @@ export class PomodoroPage implements OnInit, ViewWillEnter {
           },
           axisLabel: {
             show: false
+          },
+          splitLine: {
+            show: false,
+          },
+          title: {
+            show: false
+          },
+          detail: {
+            show: false,
+          },
+          data: [
+            {
+              value: 0
+            }
+          ]
+        },
+        {
+          name: 'tick-on-progress',
+          type: 'gauge',
+          zlevel: 2,
+          min: 0,
+          max: 30,
+          splitNumber: 6,
+          itemStyle: {
+            color: this.color
+          },
+          pointer: {
+            show: false
+          },
+          progress: {
+            show: false,
+          },
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: true,
+            distance: -8,
+            lineStyle: {
+              color: '#555',
+              width: 2,
+              cap: 'round'
+            }
+          },
+          axisLabel: {
+            show: true,
+            color: '#555',
+            fontSize: 14
+          },
+          splitLine: {
+            show: true,
+            length: 15,
+            distance: -8,
+            lineStyle: {
+              color: '#555',
+              width: 2,
+              cap: 'round'
+            }
           },
           title: {
             show: false

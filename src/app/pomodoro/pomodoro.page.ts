@@ -2,6 +2,7 @@ import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular
 import { Gesture, ViewDidLeave, ViewWillEnter, createGesture } from '@ionic/angular';
 import { StatusBar } from '@capacitor/status-bar';
 import { Haptics } from '@capacitor/haptics';
+import { KeepAwake } from '@capacitor-community/keep-awake';
 import * as echarts from 'echarts';
 
 const GaugeColor = {
@@ -41,17 +42,23 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     }
   }
 
-  ionViewWillEnter(): void {
+  async ionViewWillEnter() {
+    if ((await KeepAwake.isSupported()).isSupported) {
+      await KeepAwake.keepAwake();
+    }
     this.reset();
     this.createChart();
     this.enableGestures();
     this.startIntervalUpdateProgressData();
   }
 
-  ionViewDidLeave(): void {
+  async ionViewDidLeave() {
     this.stopIntervalUpdateProgressData();
     this.destroyGestures();
     this.destroyChart();
+    if ((await KeepAwake.isKeptAwake()).isKeptAwake) {
+      await KeepAwake.allowSleep();
+    }
   }
 
   private reset(): void {

@@ -4,6 +4,12 @@ import { StatusBar } from '@capacitor/status-bar';
 import { Haptics } from '@capacitor/haptics';
 import * as echarts from 'echarts';
 
+const GaugeColor = {
+  TomatoRed: '#ea5548',
+  Green: '#22c55e',
+  Axis: '#555',
+} as const;
+
 @Component({
   selector: 'app-pomodoro',
   templateUrl: './pomodoro.page.html',
@@ -14,7 +20,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
 
   public chart?: echarts.ECharts;
   public startTime: number = Date.now();
-  public color = '#ea5548'; // Tomato Red!
+  public color: string = GaugeColor.TomatoRed;
 
   private tapGesture?: Gesture;
 
@@ -51,7 +57,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private reset(): void {
     // this.startTime = Date.now() - 60 * 29 * 1000; // for debug
     this.startTime = Date.now();
-    this.color = '#ea5548';
+    this.color = GaugeColor.TomatoRed;
     this.isEnd = false;
     this.paused = false;
     this.pausedTime = undefined;
@@ -90,18 +96,9 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
           },
           axisLabel: {
             show: false,
-            distance: 25,
-            color: '#999',
-            fontSize: 16
           },
           axisTick: {
             show: false,
-            distance: -30,
-            length: 8,
-            lineStyle: {
-              color: '#999',
-              width: 2
-            }
           },
           splitLine: {
             show: false,
@@ -209,14 +206,14 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
             show: true,
             distance: -8,
             lineStyle: {
-              color: '#555',
+              color: GaugeColor.Axis,
               width: 2,
               cap: 'round'
             }
           },
           axisLabel: {
             show: true,
-            color: '#555',
+            color: GaugeColor.Axis,
             fontSize: 14
           },
           splitLine: {
@@ -224,7 +221,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
             length: 15,
             distance: -8,
             lineStyle: {
-              color: '#555',
+              color: GaugeColor.Axis,
               width: 2,
               cap: 'round'
             }
@@ -278,7 +275,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
       this.stopIntervalUpdateProgressData();
     }
     if (second > 60 * 25) {
-      this.color = '#22c55e';
+      this.color = GaugeColor.Green;
     }
     this.chart?.setOption({
       series: [

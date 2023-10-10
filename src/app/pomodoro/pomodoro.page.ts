@@ -65,12 +65,15 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
 
   @HostListener('window:resize', ['$event'])
   public onResizeWindow(event: Event): void {
-    this.chart?.resize();
+    // resize() is not called. Instead, CSS and SVG are used to scale the image to fit the Windows size.
+    // this.chart?.resize();
   }
 
   private createChart(): void {
     this.chart = echarts.init(this.echartsElementRef?.nativeElement, null, {
-      renderer: 'svg'
+      renderer: 'svg',
+      width: 384,
+      height: 384,
     });
     this.chart.setOption({
       series: [
@@ -207,7 +210,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
             distance: -8,
             lineStyle: {
               color: GaugeColor.Axis,
-              width: 2,
+              width: 1,
               cap: 'round'
             }
           },
@@ -240,6 +243,15 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
         }
       ]
     });
+
+    // resize automatically.
+    const svgWrapperDiv = <HTMLDivElement>this.chart?.getDom().querySelector('div');
+    svgWrapperDiv.style.width = '100%';
+    svgWrapperDiv.style.height = '100%';
+    const svg = <SVGElement>this.chart?.getDom().querySelector('svg');
+    svg.setAttribute('viewBox', '0 0 384 384');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
   }
 
   private destroyChart(): void {

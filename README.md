@@ -8,6 +8,9 @@ Very simple.
 - Tap to stop and resume.
 - Long tap resets the timer.
 
+## Screenshot
+![screenshot1](docs/screenshot.png)
+
 ## Distribution
 Will be available on Play Store soon.
 

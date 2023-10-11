@@ -29,6 +29,8 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   public paused: boolean = false;
   public pausedTime?: number;
 
+  private intervalUpdateProgressDataId?: any;
+
   constructor() {
   }
 
@@ -62,8 +64,8 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   }
 
   private reset(): void {
-    // this.startTime = Date.now() - 60 * 29 * 1000; // for debug
-    this.startTime = Date.now();
+    this.startTime = Date.now() - 60 * 24 * 1000; // for debug
+    // this.startTime = Date.now();
     this.color = GaugeColor.TomatoRed;
     this.isEnd = false;
     this.paused = false;
@@ -268,7 +270,6 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     echarts.dispose(this.chart);
   }
 
-  private intervalUpdateProgressDataId?: any;
   private startIntervalUpdateProgressData(): void {
     if (this.intervalUpdateProgressDataId) {
       // already started.
@@ -289,11 +290,15 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private updateProgressData(): void {
     let second = (Date.now() - this.startTime) / 1000;
     if (second >= 60 * 30) {
+      this.vibrate();
       second = 60 * 30;
       this.isEnd = true;
       this.stopIntervalUpdateProgressData();
     }
-    if (second > 60 * 25) {
+    if (second >= 60 * 25) {
+      if (this.color != GaugeColor.Green) {
+        this.vibrate();
+      }
       this.color = GaugeColor.Green;
     }
     this.chart?.setOption({
@@ -342,10 +347,21 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   }
 
   private onLongTap(): void {
-    Haptics.vibrate().then(() => {
+    this.vibrate(() => {
       this.reset();
       this.startIntervalUpdateProgressData();
     });
+  }
+
+  private vibrate(callback: () => void = () => {}): void {
+    Haptics.vibrate()
+      .catch((e) => {
+        // When do it fail?
+        console.log(e);
+      })
+      .finally(() => {
+        callback();
+      });
   }
 
   private onTap(): void {

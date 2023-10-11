@@ -64,8 +64,8 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   }
 
   private reset(): void {
-    this.startTime = Date.now() - 60 * 24 * 1000; // for debug
-    // this.startTime = Date.now();
+    // this.startTime = Date.now() - 60 * 24 * 1000; // for debug
+    this.startTime = Date.now();
     this.color = GaugeColor.TomatoRed;
     this.isEnd = false;
     this.paused = false;

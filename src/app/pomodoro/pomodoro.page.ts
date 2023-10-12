@@ -3,6 +3,7 @@ import { Gesture, ViewDidLeave, ViewWillEnter, createGesture } from '@ionic/angu
 import { StatusBar } from '@capacitor/status-bar';
 import { Haptics } from '@capacitor/haptics';
 import { KeepAwake } from '@capacitor-community/keep-awake';
+import { Storage } from '@ionic/storage-angular';
 import * as echarts from 'echarts';
 
 const GaugeColor = {
@@ -10,6 +11,18 @@ const GaugeColor = {
   Green: '#22c55e',
   Axis: '#555',
 } as const;
+
+const StorageKey = {
+  Settings: 'settings-0.0.1'
+} as const;
+
+interface Settings {
+  vibrate: {
+    min25: boolean;
+    min30: boolean;
+    longTap: boolean;
+  }
+}
 
 @Component({
   selector: 'app-pomodoro',
@@ -31,7 +44,17 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
 
   private intervalUpdateProgressDataId?: any;
 
-  constructor() {
+  public settings: Settings = {
+    // default settings
+    vibrate: {
+      min25: true,
+      min30: true,
+      longTap: true
+    }
+  };
+
+  constructor(
+    private storage: Storage) {
   }
 
   async ngOnInit() {
@@ -42,6 +65,9 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     } catch (e) {
       console.log(e);
     }
+
+    await this.storage.create();
+    this.loadSettings();
   }
 
   async ionViewWillEnter() {
@@ -290,13 +316,15 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private updateProgressData(): void {
     let second = (Date.now() - this.startTime) / 1000;
     if (second >= 60 * 30) {
-      this.vibrate();
+      if (this.settings.vibrate.min30) {
+        this.vibrate();
+      }
       second = 60 * 30;
       this.isEnd = true;
       this.stopIntervalUpdateProgressData();
     }
     if (second >= 60 * 25) {
-      if (this.color != GaugeColor.Green) {
+      if (this.settings.vibrate.min25 && this.color != GaugeColor.Green) {
         this.vibrate();
       }
       this.color = GaugeColor.Green;
@@ -347,10 +375,15 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   }
 
   private onLongTap(): void {
-    this.vibrate(() => {
+    const callback = () => {
       this.reset();
       this.startIntervalUpdateProgressData();
-    });
+    };
+    if (this.settings.vibrate.longTap) {
+      this.vibrate(callback);
+    } else {
+      callback();
+    }
   }
 
   private vibrate(callback: () => void = () => {}): void {
@@ -380,5 +413,16 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
       this.stopIntervalUpdateProgressData();
     }
     this.paused = !this.paused;
+  }
+
+  public async saveSettings(): Promise<void> {
+    await this.storage.set(StorageKey.Settings, this.settings);
+  }
+
+  private async loadSettings(): Promise<void> {
+    const settings = <Settings>await this.storage.get(StorageKey.Settings);
+    if (!!settings) {
+      this.settings = settings;
+    }
   }
 }

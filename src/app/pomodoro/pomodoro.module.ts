@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { PomodoroPageRoutingModule } from './pomodoro-routing.module';
 
 import { PomodoroPage } from './pomodoro.page';
+import { LicenseModal } from './license.modal';
 
 @NgModule({
   imports: [
@@ -15,6 +16,9 @@ import { PomodoroPage } from './pomodoro.page';
     IonicModule,
     PomodoroPageRoutingModule
   ],
-  declarations: [PomodoroPage]
+  declarations: [
+    PomodoroPage,
+    LicenseModal
+  ]
 })
 export class PomodoroPageModule {}

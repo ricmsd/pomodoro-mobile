@@ -1,3 +1,36 @@
-<ion-content [fullscreen]="true">
-  <div #echarts id="container" [class.paused]="paused"></div>
-</ion-content>
+<div class="ion-page" id="main-content">
+  <ion-content [fullscreen]="true">
+    <div #echarts id="container" [class.paused]="paused"></div>
+    <ion-menu-button></ion-menu-button>
+  </ion-content>
+</div>
+
+<ion-menu contentId="main-content">
+  <ion-content class="ion-padding">
+
+    <ion-item lines="full">
+      <ion-label>Vibration</ion-label>
+    </ion-item>
+    <ion-item lines="none" class="ion-padding-start">
+      <ion-toggle #min25 [checked]="settings.vibrate.min25"
+        (ionChange)="settings.vibrate.min25 = min25.checked; saveSettings()">25 Minutes</ion-toggle>
+    </ion-item>
+    <ion-item lines="none" class="ion-padding-start">
+      <ion-toggle #min30 [checked]="settings.vibrate.min30"
+        (ionChange)="settings.vibrate.min30 = min30.checked; saveSettings()">30 Minutes</ion-toggle>
+    </ion-item>
+    <ion-item lines="none" class="ion-padding-start">
+      <ion-toggle #longTap [checked]="settings.vibrate.longTap"
+      (ionChange)="settings.vibrate.longTap = longTap.checked; saveSettings()">Long tap</ion-toggle>
+    </ion-item>
+
+    <ion-item lines="full" class="ion-padding-top">
+      <ion-label>License</ion-label>
+    </ion-item>
+    <ion-item lines="none" class="ion-padding-start" button id="open-oss-licenses">
+      <ion-label>OSS Licenses</ion-label>
+    </ion-item>
+
+    <app-license-modal trigger="open-oss-licenses"></app-license-modal>
+  </ion-content>
+</ion-menu>

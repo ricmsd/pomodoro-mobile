@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'pomodoro-mobile',
+  appName: 'Pomodoro',
   webDir: 'www',
   server: {
     androidScheme: 'https'

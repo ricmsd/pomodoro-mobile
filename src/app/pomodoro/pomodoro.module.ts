@@ -8,6 +8,7 @@ import { PomodoroPageRoutingModule } from './pomodoro-routing.module';
 
 import { PomodoroPage } from './pomodoro.page';
 import { LicenseModal } from './license.modal';
+import { GaugeComponent } from './gauge.component';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { LicenseModal } from './license.modal';
   ],
   declarations: [
     PomodoroPage,
-    LicenseModal
+    LicenseModal,
+    GaugeComponent
   ]
 })
 export class PomodoroPageModule {}

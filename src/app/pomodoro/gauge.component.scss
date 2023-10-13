@@ -1,0 +1,45 @@
+#container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    --data-color: #555;
+
+    @keyframes blinkRed {
+        0% {
+            fill: #ea5548;
+        }
+        50% {
+            fill: #e6ebf8;
+        }
+        100% {
+            fill: #ea5548;
+        }
+    }
+    @keyframes blinkGreen {
+        0% {
+            fill: #22c55e;
+        }
+        50% {
+            fill: #e6ebf8;
+        }
+        100% {
+            fill: #22c55e;
+        }
+    }
+    &.paused ::ng-deep svg {
+        path[fill="#ea5548"] {
+            animation: blinkRed 1s ease-in infinite;
+        }
+        path[fill="#22c55e"] {
+            animation: blinkGreen 1s ease-in infinite;
+        }
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    #container {
+        --data-color: #E6EBF8;
+    }
+}

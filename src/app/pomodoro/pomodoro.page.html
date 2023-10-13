@@ -1,6 +1,8 @@
 <div class="ion-page" id="main-content">
   <ion-content [fullscreen]="true">
-    <div #echarts id="container" [class.paused]="paused"></div>
+    <div #gaugeWrapper class="gauge-wrapper">
+      <app-gauge-component [second]="second" [paused]="paused"></app-gauge-component>
+    </div>
     <ion-menu-button></ion-menu-button>
   </ion-content>
 </div>

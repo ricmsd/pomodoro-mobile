@@ -238,6 +238,8 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
   private updateChart(): void {
     if (this.second >= Second.Minutes25) {
       this.color = GaugeColor.Green;
+    } else {
+      this.color = GaugeColor.TomatoRed;
     }
     this.chart?.setOption({
       series: [

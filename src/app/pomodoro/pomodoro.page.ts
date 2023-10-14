@@ -1,5 +1,5 @@
 import { Component, ElementRef, NgZone, OnInit, ViewChild } from '@angular/core';
-import { Gesture, ViewDidLeave, ViewWillEnter, createGesture } from '@ionic/angular';
+import { Gesture, IonToast, ViewDidLeave, ViewWillEnter, createGesture } from '@ionic/angular';
 import { StatusBar } from '@capacitor/status-bar';
 import { Haptics } from '@capacitor/haptics';
 import { KeepAwake } from '@capacitor-community/keep-awake';
@@ -7,7 +7,7 @@ import { Storage } from '@ionic/storage-angular';
 import { Second } from './gauge.component';
 
 const StorageKey = {
-  Settings: <string>'settings-0.0.1'
+  Settings: <string>'settings-0.0.2'
 } as const;
 
 interface Settings {
@@ -15,7 +15,8 @@ interface Settings {
     min25: boolean;
     min30: boolean;
     longTap: boolean;
-  }
+  },
+  message: boolean;
 }
 
 @Component({
@@ -26,7 +27,8 @@ interface Settings {
 export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   @ViewChild('gaugeWrapper') gaugeWrapperRef?: ElementRef<HTMLElement>;
 
-  public startTime: number = Date.now();
+  public correctStartTime: number = 0;
+  public startTime: number = 0;
   public second = Second.Zero;
   private previousSecond = Second.Zero;
   public isEnd: boolean = false;
@@ -36,13 +38,21 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
 
   private tapGesture?: Gesture;
 
+  @ViewChild('toast') toast?: IonToast;
+  public toastOptions = {
+    visible: false,
+    message: '',
+    duration: 0,
+  };
+
   public settings: Settings = {
     // default settings
     vibrate: {
       min25: true,
       min30: true,
       longTap: true
-    }
+    },
+    message: true
   };
 
   constructor(
@@ -83,10 +93,12 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private reset(): void {
     // this.startTime = Date.now() - 60 * 24 * 1000; // for debug
     this.startTime = Date.now();
+    this.correctStartTime = this.startTime;
     this.second = Second.Zero;
     this.isEnd = false;
     this.paused = false;
     this.pausedTime = undefined;
+    this.visibleToastMessage('Timer started.');
   }
 
   private startIntervalUpdateSecond(): void {
@@ -106,19 +118,27 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     }
   }
 
+  private getHHMM(time: number): string {
+    const date = new Date(time);
+    return `0${date.getHours()}`.slice(-2) + ':' + `0${date.getMinutes()}`.slice(-2);
+  }
+
   private updateSecond(): void {
-    this.second = Math.min(Math.floor((Date.now() - this.startTime) / 1000), Second.Minutes30);
+    const currentTime = Date.now();
+    this.second = Math.min(Math.floor((currentTime - this.startTime) / 1000), Second.Minutes30);
     if (this.second === Second.Minutes30) {
       if (this.settings.vibrate.min30) {
         this.vibrate();
       }
       this.isEnd = true;
+      this.visibleToastMessage(`Timer ${this.getHHMM(this.correctStartTime)} - ${this.getHHMM(currentTime)} ended.`, 0);
       this.stopIntervalUpdateSecond();
     }
     if (this.previousSecond < Second.Minutes25 && this.second >= Second.Minutes25) {
       if (this.settings.vibrate.min25) {
         this.vibrate();
       }
+      this.visibleToastMessage('Short break.');
     }
     this.previousSecond = this.second;
   }
@@ -184,9 +204,11 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     if (this.paused) {
       this.startTime += Date.now() - <number>this.pausedTime;
       this.pausedTime = undefined;
+      this.visibleToastMessage('Timer resumed.')
       this.startIntervalUpdateSecond();
     } else {
       this.pausedTime = Date.now();
+      this.visibleToastMessage('Timer paused.')
       this.stopIntervalUpdateSecond();
     }
     this.paused = !this.paused;
@@ -201,5 +223,18 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     if (!!settings) {
       this.settings = settings;
     }
+  }
+
+  private visibleToastMessage(message: string, duration: number = 5000): void {
+    if (!this.settings.message) {
+      return;
+    }
+    this.toast?.dismiss().then(() => {
+      this.toastOptions = {
+        visible: true,
+        message: message,
+        duration: duration
+      };
+    });
   }
 }

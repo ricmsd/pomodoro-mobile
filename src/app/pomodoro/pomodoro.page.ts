@@ -126,6 +126,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   private enableGestures(): void {
     const longTapThreshold = 2000;
     let longTapTimerId: any;
+    // Since the Gesture callback is outside of Angular, use ngZone.run().
     this.tapGesture = createGesture({
       el: <HTMLElement>this.gaugeWrapperRef?.nativeElement,
       gestureName: 'tap',

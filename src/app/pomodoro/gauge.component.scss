@@ -28,12 +28,26 @@
             fill: #22c55e;
         }
     }
+    @keyframes blinkFloodOpacity {
+        0% {
+            flood-opacity: 1;
+        }
+        50% {
+            flood-opacity: 0;
+        }
+        100% {
+            flood-opacity: 1;
+        }
+    }
     &.paused ::ng-deep svg {
         path[fill="#ea5548"] {
             animation: blinkRed 1s ease-in infinite;
         }
         path[fill="#22c55e"] {
             animation: blinkGreen 1s ease-in infinite;
+        }
+        defs filter feDropShadow {
+            animation: blinkFloodOpacity 1s ease-in infinite;
         }
     }
 }

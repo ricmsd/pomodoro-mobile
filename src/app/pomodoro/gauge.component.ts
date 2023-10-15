@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from "@angular/core";
 import * as echarts from 'echarts';
 
 const GaugeColor = {
@@ -18,13 +18,12 @@ export const Second = {
   templateUrl: './gauge.component.html',
   styleUrls: ['./gauge.component.scss']
 })
-export class GaugeComponent implements AfterViewInit, OnDestroy {
+export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild('echarts') echartsElementRef?: ElementRef<HTMLElement>;
 
   private _second: number = Second.Zero;
   @Input() set second(value: number) {
     this._second = Math.min(value, Second.Minutes30);
-    this.updateChart();
   }
   get second(): number {
     return this._second;
@@ -32,15 +31,43 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
 
   @Input() paused: boolean = false;
 
+  @Input() fancyColor: boolean = false;
+
+  @Input() invertColor: boolean = false;
+
   public chart?: echarts.ECharts;
   public color: string = GaugeColor.TomatoRed;
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['second'] || changes['fancyColor'] || changes['invertColor']) {
+      this.updateColor();
+      this.updateChart();
+    }
+  }
+
   ngAfterViewInit(): void {
+    this.updateColor();
     this.createChart();
   }
 
   ngOnDestroy(): void {
     this.destroyChart();
+  }
+
+  private getWorkColor(): string {
+    return this.invertColor ? GaugeColor.Green : GaugeColor.TomatoRed;
+  }
+
+  private getShortBreakColor(): string {
+    return this.invertColor ? GaugeColor.TomatoRed : GaugeColor.Green;
+  }
+
+  private updateColor(): void {
+    if (this.second >= Second.Minutes25) {
+      this.color = this.getShortBreakColor();
+    } else {
+      this.color = this.getWorkColor();
+    }
   }
 
   private createChart(): void {
@@ -81,12 +108,7 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
             show: false,
           },
           anchor: {
-            show: true,
-            showAbove: true,
-            size: 50,
-            itemStyle: {
-              color: this.color
-            }
+            show: false,
           },
           title: {
             show: false
@@ -133,7 +155,11 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
           progress: {
             show: true,
             width: 50,
-            roundCap: true
+            roundCap: true,
+            itemStyle: {
+              shadowBlur: this.fancyColor ? 15 : 0,
+              shadowColor: this.color,
+            }
           },
           axisLine: {
             show: false
@@ -172,6 +198,14 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
           },
           pointer: {
             show: false
+          },
+          anchor: {
+            show: true,
+            showAbove: true,
+            size: 50,
+            itemStyle: {
+              color: this.color
+            }
           },
           progress: {
             show: false,
@@ -236,12 +270,10 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
   }
 
   private updateChart(): void {
-    if (this.second >= Second.Minutes25) {
-      this.color = GaugeColor.Green;
-    } else {
-      this.color = GaugeColor.TomatoRed;
+    if (!this.chart) {
+      return;
     }
-    this.chart?.setOption({
+    this.chart.setOption({
       series: [
         {
           name: 'minute',
@@ -259,9 +291,32 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
           itemStyle: {
             color: this.color
           },
+          progress: {
+            show: true,
+            width: 50,
+            roundCap: true,
+            itemStyle: {
+              shadowBlur: this.fancyColor ? 15 : 0,
+              shadowColor: this.color
+            }
+          },
           data: [{
             value: this.second
           }]
+        },
+        {
+          name: 'tick-on-progress',
+          itemStyle: {
+            color: this.color
+          },
+          anchor: {
+            show: true,
+            showAbove: true,
+            size: 50,
+            itemStyle: {
+              color: this.color
+            }
+          }
         }
       ]
     });

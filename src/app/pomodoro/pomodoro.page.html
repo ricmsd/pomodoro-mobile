@@ -1,7 +1,8 @@
 <div class="ion-page" id="main-content">
   <ion-content [fullscreen]="true">
     <div #gaugeWrapper class="gauge-wrapper">
-      <app-gauge-component [second]="second" [paused]="paused"></app-gauge-component>
+      <app-gauge-component [second]="second" [paused]="paused"
+        [fancyColor]="settings.color.fancyGauge" [invertColor]="settings.color.invertColor"></app-gauge-component>
     </div>
     <ion-menu-button></ion-menu-button>
     <ion-toast #toast [isOpen]="toastOptions.visible" [message]="toastOptions.message" [duration]="toastOptions.duration"
@@ -34,6 +35,18 @@
     <ion-item lines="none" class="ion-padding-start">
       <ion-toggle #message [checked]="settings.message"
         (ionChange)="settings.message = message.checked; saveSettings()">Display message</ion-toggle>
+    </ion-item>
+
+    <ion-item lines="full" class="ion-padding-top">
+      <ion-label>Color</ion-label>
+    </ion-item>
+    <ion-item lines="none" class="ion-padding-start">
+      <ion-toggle #fancyGauge [checked]="settings.color.fancyGauge"
+        (ionChange)="settings.color.fancyGauge= fancyGauge.checked; saveSettings()">Fancy gauge</ion-toggle>
+    </ion-item>
+    <ion-item lines="none" class="ion-padding-start">
+      <ion-toggle #invertColor [checked]="settings.color.invertColor"
+        (ionChange)="settings.color.invertColor = invertColor.checked; saveSettings()">Invert color</ion-toggle>
     </ion-item>
 
     <ion-item lines="full" class="ion-padding-top">

@@ -7,7 +7,7 @@ import { Storage } from '@ionic/storage-angular';
 import { Second } from './gauge.component';
 
 const StorageKey = {
-  Settings: <string>'settings-0.0.2'
+  Settings: <string>'settings-0.0.3'
 } as const;
 
 interface Settings {
@@ -17,6 +17,10 @@ interface Settings {
     longTap: boolean;
   },
   message: boolean;
+  color: {
+    fancyGauge: boolean;
+    invertColor: boolean;
+  }
 }
 
 @Component({
@@ -52,7 +56,11 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
       min30: true,
       longTap: true
     },
-    message: true
+    message: true,
+    color: {
+      fancyGauge: false,
+      invertColor: false
+    }
   };
 
   constructor(

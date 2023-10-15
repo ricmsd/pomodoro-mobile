@@ -35,12 +35,30 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   @Input() invertColor: boolean = false;
 
+  /**
+   * [[startTime, endTime], [startTime, endTime], ..., [startTime, endTime]]
+   */
+  @Input() history: number[][] = [];
+
   public chart?: echarts.ECharts;
   public color: string = GaugeColor.TomatoRed;
+
+  private historyLeftMargin: number = 0;
+  private historyData: number[][] = [];
+
+  constructor() {
+    for (let i = 0; i < 14; i++) {
+      this.historyData.push([i, 0]);
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['second'] || changes['fancyColor'] || changes['invertColor']) {
       this.updateColor();
+      this.updateChart();
+    }
+    if (changes['history']) {
+      this.updateHistory();
       this.updateChart();
     }
   }
@@ -70,6 +88,32 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
   }
 
+  private updateHistory(): void {
+    // history
+    // - big circle means 4 pomodoros.
+    // - small circle means 1 pomodoro.
+    // - max 12 big circle (4 pomodoros * 12 = 24 hours) per one day.
+    // - max 14 circle point (4 pmodoros * 11 + 1 pomodoro * 3) per one day.
+    // ex.) b b b s s s => 4 * 3 + 3 = 15 pomodoros.
+    const historyPoint = Math.floor(this.history.length / 4) + this.history.length % 4;
+    this.historyLeftMargin = (384 - 244) / 2 + (historyPoint % 2 === 0 ? 0 : 244 / 13 / 2)
+    const data = [];
+    let i = 0;
+    for (; i < Math.floor((14 - historyPoint) / 2); i++) {
+      data.push([i, 0]); // 0 = empty (left padding)
+    }
+    for (let j = 0; j < Math.floor(this.history.length / 4); j++, i++) {
+      data.push([i, 4]); // 4 = big circle
+    }
+    for (let j = 0; j < this.history.length % 4; j++, i++) {
+      data.push([i, 1]); // 1 = small circle
+    }
+    for (; i < 14; i++) {
+      data.push([i, 0]); // 0 = empty (right padding)
+    }
+    this.historyData = data;
+  }
+
   private createChart(): void {
     this.chart = echarts.init(this.echartsElementRef?.nativeElement, null, {
       renderer: 'svg',
@@ -77,6 +121,26 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
       height: 384,
     });
     this.chart.setOption({
+      singleAxis: {
+        bottom: 0,
+        left: this.historyLeftMargin,
+        height: 84,
+        width: 244,
+        axisLine: {
+          show: false,
+        },
+        axisLabel: {
+          show: false,
+        },
+        axisTick: {
+          show: false,
+        },
+        splitLine: {
+          show: false,
+        },
+        // 13 splitNumber = 14 axisTick (max is 11 big circle + 3 small circle)
+        splitNumber: 13,
+      },
       series: [
         {
           name: 'minute',
@@ -248,6 +312,19 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
               value: 0
             }
           ]
+        },
+        {
+          type: 'scatter',
+          name: 'history',
+          coordinateSystem: 'singleAxis',
+          itemStyle: {
+            color: 'rgb(230, 235, 248)',
+            opacity: 1
+          },
+          symbolSize: (value: number[]) => {
+            return value[1] * 4;
+          },
+          data: this.historyData
         }
       ]
     });
@@ -274,6 +351,9 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
       return;
     }
     this.chart.setOption({
+      singleAxis: {
+        left: this.historyLeftMargin,
+      },
       series: [
         {
           name: 'minute',
@@ -317,6 +397,10 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
               color: this.color
             }
           }
+        },
+        {
+          name: 'history',
+          data: this.historyData
         }
       ]
     });

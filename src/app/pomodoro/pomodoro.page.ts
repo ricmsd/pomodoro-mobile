@@ -40,6 +40,8 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   public pausedTime?: number;
   private intervalUpdateSecondId?: any;
 
+  public history: number[][] = [];
+
   private tapGesture?: Gesture;
 
   @ViewChild('toast') toast?: IonToast;
@@ -79,6 +81,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
 
     await this.storage.create();
     await this.loadSettings();
+    await this.loadHistory();
   }
 
   async ionViewWillEnter() {
@@ -141,6 +144,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
       this.isEnd = true;
       this.visibleToastMessage(`Timer ${this.getHHMM(this.correctStartTime)} - ${this.getHHMM(currentTime)} ended.`, 0);
       this.stopIntervalUpdateSecond();
+      this.updateHistory(this.correctStartTime, currentTime).then(() => {});
     }
     if (this.previousSecond < Second.Minutes25 && this.second >= Second.Minutes25) {
       if (this.settings.vibrate.min25) {
@@ -231,6 +235,30 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     if (!!settings) {
       this.settings = settings;
     }
+  }
+
+  private getCurrentHistoryKey(): string {
+    const now = new Date();
+    const yyyymmdd = now.getFullYear() + `0${now.getMonth()+1}`.slice(-2) + `0${now.getDate()}`.slice(-2);
+    return 'history-' + yyyymmdd;
+  }
+
+  private async loadHistory(): Promise<void> {
+    const key = this.getCurrentHistoryKey();
+    const keys = await this.storage.keys();
+    if (!keys.includes(key)) {
+      console.log(`history not found in storage: key=${key}`);
+      return;
+    }
+    this.history = await this.storage.get(key);
+  }
+
+  private async updateHistory(startTime: number, endTime: number): Promise<void> {
+    const key = this.getCurrentHistoryKey();
+    const value = <number[][]>await this.storage.get(key) || [];
+    value.push([startTime, endTime]);
+    await this.storage.set(key, value);
+    this.history = value;
   }
 
   private visibleToastMessage(message: string, duration: number = 5000): void {

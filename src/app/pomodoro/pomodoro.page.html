@@ -6,7 +6,7 @@
     </div>
     <ion-menu-button></ion-menu-button>
     <ion-toast #toast [isOpen]="toastOptions.visible" [message]="toastOptions.message" [duration]="toastOptions.duration"
-      (didDismiss)="toastOptions.visible = false"></ion-toast>
+      (didDismiss)="toastOptions.visible = false" [buttons]="toastButtons"></ion-toast>
   </ion-content>
 </div>
 

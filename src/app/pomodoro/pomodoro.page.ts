@@ -51,6 +51,13 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
     duration: 0,
   };
 
+  public toastButtons = [
+    {
+      icon: 'close-outline',
+      role: 'cancel'
+    }
+  ];
+
   public settings: Settings = {
     // default settings
     vibrate: {
@@ -102,7 +109,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
   }
 
   private reset(): void {
-    // this.startTime = Date.now() - 60 * 24 * 1000; // for debug
+    // this.startTime = Date.now() - 60 * 29 * 1000 - 50 * 1000; // for debug
     this.startTime = Date.now();
     this.correctStartTime = this.startTime;
     this.second = Second.Zero;

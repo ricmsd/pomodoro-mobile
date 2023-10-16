@@ -95,23 +95,25 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
     // - max 12 big circle (4 pomodoros * 12 = 24 hours) per one day.
     // - max 14 circle point (4 pmodoros * 11 + 1 pomodoro * 3) per one day.
     // ex.) b b b s s s => 4 * 3 + 3 = 15 pomodoros.
-    const historyPoint = Math.floor(this.history.length / 4) + this.history.length % 4;
-    this.historyLeftMargin = (384 - 244) / 2 + (historyPoint % 2 === 0 ? 0 : 244 / 13 / 2)
+    const bigCircle = Math.floor(this.history.length / 4);
+    const smallCircle = this.history.length % 4;
+    const historyPoint = bigCircle + smallCircle;
     const data = [];
-    let i = 0;
-    for (; i < Math.floor((14 - historyPoint) / 2); i++) {
-      data.push([i, 0]); // 0 = empty (left padding)
+    let point = 0;
+    for (let i = 0; i < bigCircle; i++) {
+      data.push([point++, 4]); // 4 = big circle
     }
-    for (let j = 0; j < Math.floor(this.history.length / 4); j++, i++) {
-      data.push([i, 4]); // 4 = big circle
+    for (let i = 0; i < smallCircle; i++) {
+      data.push([point++, 2]); // 2 = small circle
     }
-    for (let j = 0; j < this.history.length % 4; j++, i++) {
-      data.push([i, 1]); // 1 = small circle
-    }
-    for (; i < 14; i++) {
-      data.push([i, 0]); // 0 = empty (right padding)
+    for (let i = 0; i < (14 - bigCircle - smallCircle); i++) {
+      data.push([point++, 0]); // 0 = empty
     }
     this.historyData = data;
+    console.log('updateHistory', data);
+
+    // centering circles
+    this.historyLeftMargin = (384 - 244) / 2 + (244 - (244 / 13) * (historyPoint - 1)) / 2;
   }
 
   private createChart(): void {
@@ -324,6 +326,7 @@ export class GaugeComponent implements OnChanges, AfterViewInit, OnDestroy {
           symbolSize: (value: number[]) => {
             return value[1] * 4;
           },
+          silent: true,
           data: this.historyData
         }
       ]

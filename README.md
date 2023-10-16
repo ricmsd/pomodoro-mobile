@@ -12,7 +12,7 @@ Very simple.
 ![screenshot1](docs/screenshot.png)
 
 ## Distribution
-Will be available on Play Store soon.
+Distributed through [Google Play Store](https://play.google.com/store/apps/details?id=app.ricmsd.pomodoro).
 
 ## How to build (for developers)
 

@@ -9,7 +9,10 @@ Very simple.
 - Long tap resets the timer.
 
 ## Screenshot
-![screenshot1](docs/screenshot.png)
+|0 - 25 minutes color|25 - 30 minutes color|Settings|
+|---|---|---|
+|![0-25min](https://raw.githubusercontent.com/ricmsd/pomodoro-mobile/main/docs/screenshot1.png)|![25-30min](https://raw.githubusercontent.com/ricmsd/pomodoro-mobile/main/docs/screenshot2.png)|![settings](https://raw.githubusercontent.com/ricmsd/pomodoro-mobile/main/docs/screenshot3.png)|
+
 
 ## Distribution
 Distributed through [Google Play Store](https://play.google.com/store/apps/details?id=app.ricmsd.pomodoro).

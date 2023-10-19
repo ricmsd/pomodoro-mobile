@@ -152,8 +152,7 @@ export class PomodoroPage implements OnInit, ViewWillEnter, ViewDidLeave {
       this.visibleToastMessage(`Timer ${this.getHHMM(this.correctStartTime)} - ${this.getHHMM(currentTime)} ended.`, 0);
       this.stopIntervalUpdateSecond();
       this.updateHistory(this.correctStartTime, currentTime).then(() => {});
-    }
-    if (this.previousSecond < Second.Minutes25 && this.second >= Second.Minutes25) {
+    } else if (this.previousSecond < Second.Minutes25 && this.second >= Second.Minutes25) {
       if (this.settings.vibrate.min25) {
         this.vibrate();
       }
